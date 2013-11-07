@@ -34,6 +34,9 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
+import octopart.Octopart;
+import octopart.Part;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.CharSet;
@@ -48,12 +51,12 @@ import com.google.gson.JsonSyntaxException;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class Parts extends JFrame {
+public class MicropartMonster extends JFrame {
 	public static void main(String[] args) throws IOException {
-		new Parts(new File("./led100a_v2.csv"));
+		new MicropartMonster(new File("./led100a_v2.csv"));
 	}
 	
-	public Parts(File f) throws IOException {
+	public MicropartMonster(File f) throws IOException {
 		PartTableModel model = new PartTableModel(f);
 		final JTable table = new JTable(model);
 		table.addMouseListener(new MouseAdapter() {
@@ -158,8 +161,8 @@ public class Parts extends JFrame {
 		public void setValueAt(Object value, int row, int col) {
 			String columnName = getColumnName(col);
 			if (columnName.equals("Digikey Part")) {
-				String digikeyPartNumber = selectPart(row,(String)value);
-				data.get(row).put("Digikey Part", digikeyPartNumber);
+				List<Part> parts = Octopart.getInstance().findParts((String)value);
+				//data.get(row).put("Digikey Part", digikeyPartNumber);
 			}
 		}
 	}

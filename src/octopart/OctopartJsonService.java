@@ -49,7 +49,7 @@ import com.google.gson.JsonSyntaxException;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class OctopartJsonService extends JFrame {
-	public JsonObject fetchJson(URL url) {
+	public static JsonObject fetchJson(URL url) {
 		InputStream in;
 		String data;
 		try {
@@ -77,7 +77,7 @@ public class OctopartJsonService extends JFrame {
 		return new JsonParser().parse(data).getAsJsonObject();
 	}
 	
-	public JsonObject getStoredResults() {
+	public static JsonObject getStoredResults() {
 		try {
 			return new JsonParser().parse(FileUtils.readFileToString(new File("./cachedresult.json"))).getAsJsonObject();
 		} catch (JsonSyntaxException e) {

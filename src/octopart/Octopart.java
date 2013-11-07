@@ -89,29 +89,15 @@ public class Octopart extends JFrame {
 	
 	public List<Part> findParts(String query) {
 		URL url = createSearchUrl(query);
+		JsonObject data = OctopartJsonService.fetchJson(url);
+		
+		List<Part> parts = new LinkedList<Part>();
 		for (JsonElement el : data.getAsJsonArray("results")) {
 			JsonObject object = el.getAsJsonObject();
-			JsonObject item = object.getAsJsonObject("item");
-			String mpn = item.get("mpn").getAsString();
-			JsonArray offers = item.getAsJsonArray("offers");
-			String description = getDescription(item);
-			for (JsonElement offer : offers) {
-				JsonObject offerObj = offer.getAsJsonObject();
-				int qty = offerObj.get("in_stock_quantity").getAsInt();
-				String sku = offerObj.get("sku").getAsString();
-				String seller = offerObj.get("seller").getAsJsonObject().get("uid").getAsString();
-				String prices = offerObj.get("prices").toString();
-				if (qty > 0 && digikeyuid.equals(seller)) {
-					System.out.println(mpn);
-					System.out.println("description: "+description);
-					System.out.println("prices: "+prices);
-					System.out.println("sku: "+sku);
-					//System.out.println("   "+offer.toString());
-				}
-			}
+			
+			parts.add(new Part(object));
 		}
 			
-		return search;
+		return parts;
 	}
-	
 }
