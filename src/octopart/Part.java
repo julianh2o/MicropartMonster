@@ -12,7 +12,11 @@ public class Part extends OctopartObject {
 	}
 	
 	public String getPartNumber() {
-		return json.get("mpn").getAsString();
+		return json.get("item").getAsJsonObject().get("mpn").getAsString();
+	}
+	
+	public String getStringDescription() {
+		return getDescriptions().get(0).getFirstSource().getName();
 	}
 	
 	public PartDescription getFirstDescription() {

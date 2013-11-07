@@ -53,6 +53,7 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class MicropartMonster extends JFrame {
 	public static void main(String[] args) throws IOException {
+		Octopart.setApiKey("566cc7d2");
 		new MicropartMonster(new File("./led100a_v2.csv"));
 	}
 	
@@ -66,6 +67,13 @@ public class MicropartMonster extends JFrame {
 				int row = table.rowAtPoint(e.getPoint());
 		        int col = table.columnAtPoint(e.getPoint());
 		        Object value = table.getValueAt(row, col);
+		        
+				String columnName = table.getColumnName(col);
+				if (columnName.equals("Digikey Part")) {
+					PartFinder finder = new PartFinder(MicropartMonster.this);
+					Part part = finder.showDialog();
+					if (part != null) table.setValueAt(part.getPartNumber(),row,col);
+				}
 				
 				if (SwingUtilities.isRightMouseButton(e)) {
 					StringSelection stringSelection = new StringSelection(value.toString());
@@ -159,11 +167,8 @@ public class MicropartMonster extends JFrame {
 		}
 		
 		public void setValueAt(Object value, int row, int col) {
-			String columnName = getColumnName(col);
-			if (columnName.equals("Digikey Part")) {
-				List<Part> parts = Octopart.getInstance().findParts((String)value);
-				//data.get(row).put("Digikey Part", digikeyPartNumber);
-			}
+			String name = getColumnName(col);
+			data.get(row).put(name, (String)value);
 		}
 	}
 }

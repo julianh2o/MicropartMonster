@@ -48,7 +48,7 @@ import com.google.gson.JsonSyntaxException;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class Octopart extends JFrame {
+public class Octopart {
 	public static String apiKey;
 	private static Octopart instance = null;
 	
@@ -64,7 +64,7 @@ public class Octopart extends JFrame {
 	private HashMap<String,String> defaultParameters = new HashMap<String, String>();
 	private Octopart() {
 		defaultParameters.put("include[]","descriptions");
-		defaultParameters.put("filter[fields][offers.seller.uid][]","2c3be9310496fffc"); //digikey
+		//defaultParameters.put("filter[fields][offers.seller.uid][]","2c3be9310496fffc"); //digikey
 		defaultParameters.put("apikey",apiKey);
 	}
 	
@@ -89,9 +89,11 @@ public class Octopart extends JFrame {
 	
 	public List<Part> findParts(String query) {
 		URL url = createSearchUrl(query);
-		JsonObject data = OctopartJsonService.fetchJson(url);
+		System.out.println("URL: "+url.toString());
+		JsonObject data = OctopartJsonService.getStoredResults();
+		//JsonObject data = OctopartJsonService.fetchJson(url);
 		
-		List<Part> parts = new LinkedList<Part>();
+		List<Part> parts = new ArrayList<Part>(data.getAsJsonArray("results").size());
 		for (JsonElement el : data.getAsJsonArray("results")) {
 			JsonObject object = el.getAsJsonObject();
 			
