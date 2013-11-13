@@ -61,18 +61,19 @@ public class Octopart {
 		return instance;
 	}
 	
-	private HashMap<String,String> defaultParameters = new HashMap<String, String>();
+	private List<Parameter> defaultParameters = new LinkedList<Octopart.Parameter>();
 	private Octopart() {
-		defaultParameters.put("include[]","descriptions");
+		defaultParameters.add(new Parameter("include[]","descriptions"));
+		defaultParameters.add(new Parameter("include[]","specs"));
+		defaultParameters.add(new Parameter("apikey",apiKey));
 		//defaultParameters.put("filter[fields][offers.seller.uid][]","2c3be9310496fffc"); //digikey
-		defaultParameters.put("apikey",apiKey);
 	}
 	
 	private URL createSearchUrl(String query) {
 		URL url;
 		try {
 			URIBuilder builder = new URIBuilder("http://octopart.com/api/v3/parts/search");
-			for (Entry<String,String> entry : defaultParameters.entrySet()) {
+			for (Entry<String,String> entry : defaultParameters) {
 				builder.addParameter(entry.getKey(), entry.getValue());
 			}
 			builder.addParameter("q",query);
@@ -101,5 +102,30 @@ public class Octopart {
 		}
 			
 		return parts;
+	}
+	
+	private class Parameter implements Entry<String,String> {
+		private String key,value;
+
+		public Parameter(String key, String value) {
+			this.key = key;
+			this.value = value;
+		}
+
+		@Override
+		public String getKey() {
+			return key;
+		}
+
+		@Override
+		public String getValue() {
+			return value;
+		}
+
+		@Override
+		public String setValue(String value) {
+			this.value = value;
+			return value;
+		}
 	}
 }

@@ -7,6 +7,8 @@ import java.awt.Window;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -51,6 +53,7 @@ import net.miginfocom.swing.MigLayout;
 
 import octopart.Octopart;
 import octopart.Part;
+import octopart.PartSpecification;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -94,10 +97,9 @@ public class PartFinder extends JDialog {
 			public void mouseClicked(MouseEvent e) {
 				int row = results.rowAtPoint(e.getPoint());
 		        int col = results.columnAtPoint(e.getPoint());
-		        //Object value = results.getValueAt(row, col);
 		        
 		        if (e.getClickCount() >= 2) {
-		        	PartFinder.this.selectedPart = ((PartFinderTableModel)results.getModel()).parts.get(row);
+		        	PartFinder.this.selectedPart = ((Part)((AdaptedObjectTableModel)results.getModel()).getModel().get(row).get(0));
 		        	setVisible(false);
 		        }
 			}
@@ -107,7 +109,13 @@ public class PartFinder extends JDialog {
 		
 		
 		this.add(panel);
-		setSize(500,500);
+		pack();
+		InterfaceWindow.loadWindowSize(this);
+		addComponentListener(new ComponentAdapter() {
+		    public void componentResized(ComponentEvent e) {
+		    	InterfaceWindow.saveWidowSize(PartFinder.this);
+		    }
+		});
 	}
 	
 	public Part showDialog() {
@@ -118,7 +126,20 @@ public class PartFinder extends JDialog {
 	private void performSearch() {
 		String query = search.getText();
 		List<Part> parts = Octopart.getInstance().findParts(query);
-		PartFinderTableModel model = new PartFinderTableModel(parts);
+		
+		List<List<Object>> data = new LinkedList<List<Object>>();
+		for (Part part : parts) {
+			data.add(Arrays.asList((Object)part));
+		}
+		PartTableAdapter adapter = new PartTableAdapter();
+		System.out.println("Spec count: "+parts.get(0).getSpecifications().size());
+		for (PartSpecification spec : parts.get(0).getSpecifications()) {
+			adapter.addSpecification(spec.getKey());
+			//if (adapter.size() < 5) adapter.addSpecification(spec.getKey());
+		}
+		AdaptedObjectTableModel model = new AdaptedObjectTableModel(data, Arrays.asList(adapter));
+		
+		//PartFinderTableModel model = new PartFinderTableModel(parts);
 		results.setModel(model);
 	}
 	

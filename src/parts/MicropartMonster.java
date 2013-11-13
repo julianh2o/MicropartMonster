@@ -1,65 +1,72 @@
 package parts;
 
+import java.awt.FileDialog;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 import octopart.Octopart;
 import octopart.Part;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharSet;
-import org.apache.http.client.utils.URIBuilder;
-
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-
 import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 
-public class MicropartMonster extends JFrame {
-	public static void main(String[] args) throws IOException {
+public class MicropartMonster extends InterfaceWindow {
+	public static void main(String[] args) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
 		Octopart.setApiKey("566cc7d2");
-		new MicropartMonster(new File("./led100a_v2.csv"));
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		FileDialog filepicker = new FileDialog((java.awt.Frame) null);
+		String file = "/home/julian/Desktop/led100a_v2.csv";
+		if (file == null) return;
+		new MicropartMonster(new File(file));
 	}
 	
+	private File file;
+	private JTable table;
+	private PartTableModel model; 
+	
 	public MicropartMonster(File f) throws IOException {
-		PartTableModel model = new PartTableModel(f);
-		final JTable table = new JTable(model);
+		super();
+		file = f;
+		model = new PartTableModel(f);
+		model.addTableModelListener(new TableModelListener() {
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				System.out.println("table edited");
+				MicropartMonster.this.setTitle(file.getName()+"*");
+			}
+		});
+		table = new JTable(model);
+		setTitle(f.getName());
+		
 		table.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -69,7 +76,7 @@ public class MicropartMonster extends JFrame {
 		        Object value = table.getValueAt(row, col);
 		        
 				String columnName = table.getColumnName(col);
-				if (columnName.equals("Digikey Part")) {
+				if (columnName.equals("Digikey Part") && e.getClickCount() > 1) {
 					PartFinder finder = new PartFinder(MicropartMonster.this);
 					Part part = finder.showDialog();
 					if (part != null) table.setValueAt(part.getPartNumber(),row,col);
@@ -96,13 +103,34 @@ public class MicropartMonster extends JFrame {
 		});
 		JScrollPane scroll = new JScrollPane(table);
 		this.add(scroll);
-		this.setVisible(true);
-		this.setSize(500,500);
-		this.addWindowListener(new WindowAdapter() {
+		
+		KeyStroke saveKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+		KeyboardFocusManager.getCurrentKeyboardFocusManager()
+		.addKeyEventDispatcher(new KeyEventDispatcher() {
 			@Override
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);
+			public boolean dispatchKeyEvent(KeyEvent e) {
+				KeyStroke s = KeyStroke.getKeyStrokeForEvent(e);
+				if (s.equals(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))) {
+					try {
+						MicropartMonster.this.save(MicropartMonster.this.file);
+						return true;
+					} catch (IOException e1) {
+						JOptionPane.showMessageDialog(MicropartMonster.this, "Failed to save CSV!");
+						e1.printStackTrace();
+					}
+				}
+				return false;
 			}
+		});
+		
+		this.setVisible(true);
+		this.pack();
+		loadSize();
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
+		addComponentListener(new ComponentAdapter() {
+		    public void componentResized(ComponentEvent e) {
+		    	InterfaceWindow.saveWidowSize(MicropartMonster.this);
+		    }
 		});
 	}
 	
@@ -124,7 +152,6 @@ public class MicropartMonster extends JFrame {
 					continue;
 				} else {
 					if (fields.size() != columns.size()) {
-						System.err.println("Skipping line: "+lineData);
 						continue;
 					}
 					Map<String,String> map = new HashMap<String,String>();
@@ -136,7 +163,6 @@ public class MicropartMonster extends JFrame {
 			}
 		    reader.close();
 		    
-		    //if (!columns.contains("Part Number")) columns.add("Part Number");
 		    if (!columns.contains("Digikey Part")) columns.add("Digikey Part");
 		}
 		
@@ -162,13 +188,30 @@ public class MicropartMonster extends JFrame {
 		}
 		
 		public boolean isCellEditable(int row, int col) {
-			if (getColumnName(col).equals("Digikey Part")) return true;
-			return false;
+			if (getColumnName(col).equals("Digikey Part")) return false;
+			return true;
 		}
 		
 		public void setValueAt(Object value, int row, int col) {
 			String name = getColumnName(col);
 			data.get(row).put(name, (String)value);
+			fireTableCellUpdated(row, col);
 		}
+	}
+	
+	private void save(File f) throws IOException {
+		setTitle(f.getName());
+		CSVWriter writer;
+		writer = new CSVWriter(new FileWriter(MicropartMonster.this.file));
+		
+		writer.writeNext(this.model.columns.toArray(new String[this.model.columns.size()]));
+		for (Map<String, String> rowData : this.model.data) {
+			String[] columns = new String[this.model.columns.size()];
+			for (int i=0; i<this.model.columns.size(); i++) {
+				columns[i] = rowData.get(this.model.columns.get(i));
+			}
+			writer.writeNext(columns);
+		}
+		writer.close();
 	}
 }

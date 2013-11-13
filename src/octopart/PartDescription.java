@@ -8,6 +8,10 @@ public class PartDescription extends OctopartObject {
 		super(json);
 	}
 	
+	public String getText() {
+		return json.get("value").getAsString();
+	}
+	
 	public Source getFirstSource() {
 		try {
 			return new Source(json.getAsJsonObject("attribution").getAsJsonArray("sources").get(0).getAsJsonObject());
