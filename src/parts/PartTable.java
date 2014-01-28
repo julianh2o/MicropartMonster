@@ -69,64 +69,29 @@ import com.google.gson.JsonSyntaxException;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class PartFinder extends JDialog {
-	private JTextField search;
-	private JTable results;
-	private Part selectedPart;
+public class PartTable extends JPanel {
+	JTable table;
+	List<Part> parts;
 	
-	public PartFinder(Window win) {
-		super(win, "Part Finder",Dialog.ModalityType.DOCUMENT_MODAL);
-		JPanel panel = new JPanel(new MigLayout("fill"));
-		panel.add(new JLabel("Search: "));
-		search = new JTextField();
-		panel.add(search,"growx,wrap 10");
-		
-		panel.add(new JLabel("Results"),"wrap,span");
-		results = new JTable();
-		panel.add(new JScrollPane(results),"wrap,span,grow");
-		
-		search.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				performSearch();
-			}
-		});
-		
-		results.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				int row = results.rowAtPoint(e.getPoint());
-		        int col = results.columnAtPoint(e.getPoint());
-		        
-		        if (e.getClickCount() >= 2) {
-		        	PartFinder.this.selectedPart = ((Part)((AdaptedObjectTableModel)results.getModel()).getModel().get(row).get(0));
-		        	setVisible(false);
-		        }
-			}
-		});
-		
-		selectedPart = null;
-		
-		
-		this.add(panel);
-		pack();
-		InterfaceWindow.loadWindowSize(this);
-		addComponentListener(new ComponentAdapter() {
-		    public void componentResized(ComponentEvent e) {
-		    	InterfaceWindow.saveWidowSize(PartFinder.this);
-		    }
-		});
+	public PartTable(List<Part> parts) {
+		this.parts = parts;
+		this.setLayout(new MigLayout("fill"));
+		table = new JTable();
+		this.add(new JScrollPane(table),"wrap,span,grow");
+		populate();
 	}
 	
-	public Part showDialog() {
-		setVisible(true);
-		return selectedPart;
+	public void setParts(List<Part> parts) {
+		this.parts = parts;
+		populate();
 	}
 	
-	private void performSearch() {
-		String query = search.getText();
-		List<Part> parts = Octopart.getInstance().findParts(query);
-		
+	public JTable getJTable() {
+		return table;
+	}
+	
+	private void populate() {
+		if (parts.size() == 0) return;
 		List<List<Object>> data = new LinkedList<List<Object>>();
 		for (Part part : parts) {
 			data.add(Arrays.asList((Object)part));
@@ -137,6 +102,6 @@ public class PartFinder extends JDialog {
 		}
 		AdaptedObjectTableModel model = new AdaptedObjectTableModel(data, Arrays.asList(adapter));
 		
-		results.setModel(model);
+		table.setModel(model);
 	}
 }

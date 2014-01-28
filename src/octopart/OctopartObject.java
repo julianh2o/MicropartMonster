@@ -16,4 +16,8 @@ public abstract class OctopartObject {
 	public String getOctopartClass() {
 		return json.get("__class__").getAsString();
 	}
+	
+	public String getJson() {
+		return json.toString();
+	}
 }

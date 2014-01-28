@@ -2,6 +2,8 @@ package parts;
 
 import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.FileDialog;
+import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.StringSelection;
@@ -15,10 +17,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -37,9 +43,11 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -69,74 +77,83 @@ import com.google.gson.JsonSyntaxException;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class PartFinder extends JDialog {
-	private JTextField search;
-	private JTable results;
-	private Part selectedPart;
+public class PartLibrary extends JDialog {
+	PartTable partTable;
+	JButton addButton;
+	JButton saveButton;
+	List<Part> parts;
+	File file;
 	
-	public PartFinder(Window win) {
-		super(win, "Part Finder",Dialog.ModalityType.DOCUMENT_MODAL);
+	public PartLibrary(Window win) {
+		this(win,null);
+	}
+	
+	public PartLibrary(Window win, File file) {
+		super(win, file == null ? "Untitled Library" : file.getName(),Dialog.ModalityType.DOCUMENT_MODAL);
+		this.file = file;
+		
+		parts = new LinkedList<Part>();
+		
 		JPanel panel = new JPanel(new MigLayout("fill"));
-		panel.add(new JLabel("Search: "));
-		search = new JTextField();
-		panel.add(search,"growx,wrap 10");
+		addButton = new JButton("Add part");
+		panel.add(addButton,"growx,shrinky");
 		
-		panel.add(new JLabel("Results"),"wrap,span");
-		results = new JTable();
-		panel.add(new JScrollPane(results),"wrap,span,grow");
+		saveButton = new JButton("Save Library");
+		panel.add(saveButton,"growx,shrinky,wrap");
 		
-		search.addActionListener(new ActionListener() {
+		addButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				performSearch();
+				PartFinder finder = new PartFinder(PartLibrary.this);
+				Part part = finder.showDialog();
+				parts.add(part);
+				partTable.setParts(parts);
 			}
 		});
 		
-		results.addMouseListener(new MouseAdapter() {
+		saveButton.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				int row = results.rowAtPoint(e.getPoint());
-		        int col = results.columnAtPoint(e.getPoint());
-		        
-		        if (e.getClickCount() >= 2) {
-		        	PartFinder.this.selectedPart = ((Part)((AdaptedObjectTableModel)results.getModel()).getModel().get(row).get(0));
-		        	setVisible(false);
-		        }
+			public void actionPerformed(ActionEvent e) {
+				try {
+					PartLibrary.this.save();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
 		
-		selectedPart = null;
-		
+		partTable = new PartTable(parts);
+		panel.add(partTable,"growx,span");
 		
 		this.add(panel);
 		pack();
 		InterfaceWindow.loadWindowSize(this);
 		addComponentListener(new ComponentAdapter() {
 		    public void componentResized(ComponentEvent e) {
-		    	InterfaceWindow.saveWidowSize(PartFinder.this);
+		    	InterfaceWindow.saveWidowSize(PartLibrary.this);
 		    }
 		});
 	}
 	
-	public Part showDialog() {
+	public void showDialog() {
 		setVisible(true);
-		return selectedPart;
 	}
 	
-	private void performSearch() {
-		String query = search.getText();
-		List<Part> parts = Octopart.getInstance().findParts(query);
-		
-		List<List<Object>> data = new LinkedList<List<Object>>();
-		for (Part part : parts) {
-			data.add(Arrays.asList((Object)part));
+	public void save() throws IOException {
+		if (file == null) {
+			FileDialog filepicker = new FileDialog(new Frame(), "Save", FileDialog.SAVE);
+			filepicker.setVisible(true);
+			File[] files = filepicker.getFiles();
+			if (files.length == 0) throw new RuntimeException("files null!");
+			file = files[0];
 		}
-		PartTableAdapter adapter = new PartTableAdapter();
-		for (PartSpecification spec : parts.get(0).getSpecifications()) {
-			adapter.addSpecification(spec.getKey());
-		}
-		AdaptedObjectTableModel model = new AdaptedObjectTableModel(data, Arrays.asList(adapter));
 		
-		results.setModel(model);
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
+		for (Part p : parts) {
+			bw.append(p.getJson());
+			bw.append("\n");
+		}
+		bw.close();
 	}
 }

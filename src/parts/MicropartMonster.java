@@ -46,7 +46,8 @@ public class MicropartMonster extends InterfaceWindow {
 		FileDialog filepicker = new FileDialog((java.awt.Frame) null);
 		String file = "/home/julian/Desktop/led100a_v2.csv";
 		if (file == null) return;
-		new MicropartMonster(new File(file));
+		PartLibrary pd = new PartLibrary(new MicropartMonster(new File(file)));
+		pd.showDialog();
 	}
 	
 	private File file;
