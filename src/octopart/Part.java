@@ -1,5 +1,9 @@
 package octopart;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -7,9 +11,14 @@ import java.util.Map.Entry;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class Part extends OctopartObject {
+public class Part extends OctopartObject { // implements Transferable {
+	public static final DataFlavor flavor = new DataFlavor(Part.class,"MicropartMonster Part Object");
 	public Part(JsonObject json) {
 		super(json);
+	}
+	
+	public String toString() {
+		return getPartNumber();
 	}
 	
 	public String getPartNumber() {
@@ -54,4 +63,26 @@ public class Part extends OctopartObject {
 		if (item.getAsJsonObject("specs").getAsJsonObject(key) == null) return null;
 		return new PartSpecification(key,item.getAsJsonObject("specs").getAsJsonObject(key));
 	}
+
+//	@Override
+//	public DataFlavor[] getTransferDataFlavors() {
+//		return new DataFlavor[] { Part.flavor };
+//	}
+//
+//	@Override
+//	public boolean isDataFlavorSupported(DataFlavor flavor) {
+//		if (flavor.equals(Part.flavor) || flavor.equals(DataFlavor.stringFlavor)) return true;
+//		return false;
+//	}
+//
+//	@Override
+//	public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+//		if (flavor.equals(Part.flavor)) {
+//			return this;
+//		} else if (flavor.equals(DataFlavor.stringFlavor)) {
+//			return this.toString();
+//		} else {
+//			throw new UnsupportedFlavorException(flavor);
+//		}
+//	}
 }
