@@ -53,6 +53,11 @@ public class ColumnTableModel extends AbstractTableModel {
 		data.add(new HashMap<String,Object>());
 	}
 	
+	public void addRow(HashMap<String,Object> row) {
+		data.add(row);
+		this.fireTableDataChanged();
+	}
+	
 	//TODO separate load/save out into a separate service class
 	public void load(File csv) throws IOException {
 		CSVReader reader = new CSVReader(new FileReader(csv));
