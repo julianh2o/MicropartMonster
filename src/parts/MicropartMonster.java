@@ -117,7 +117,7 @@ public class MicropartMonster extends InterfaceWindow {
 		    }
 		    
 		    protected void exportDone(JComponent c, Transferable data, int action) {
-		    	System.out.println("MM: export done"+data+"  "+action);
+		    	//System.out.println("MM: export done"+data+"  "+action);
 		    }
 		});
 		
@@ -143,43 +143,36 @@ public class MicropartMonster extends InterfaceWindow {
 			}
 		});
 		
-		table.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
-				KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-				if (stroke.equals(copy)) {
-					Object value = jtable.getValueAt(jtable.getSelectedRow(),jtable.getSelectedColumn());
-					StringSelection stringSelection = new StringSelection(value.toString());
-					Toolkit.getDefaultToolkit ().getSystemClipboard().setContents(stringSelection,null);
-				}
-			}
-		});
 		JScrollPane scroll = new JScrollPane(table);
 		this.add(scroll);
 		
 		final KeyStroke saveKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+		final KeyStroke copyKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 		final KeyStroke newKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 		KeyboardFocusManager.getCurrentKeyboardFocusManager()
 		.addKeyEventDispatcher(new KeyEventDispatcher() {
 			@Override
 			public boolean dispatchKeyEvent(KeyEvent e) {
-				KeyStroke s = KeyStroke.getKeyStrokeForEvent(e);
-				if (s.equals(saveKeystroke)) {
-					try {
-						MicropartMonster.this.table.getModel().save(MicropartMonster.this.file);
-						MicropartMonster.this.setTitle(file.getName());
-						return true;
-					} catch (IOException e1) {
-						JOptionPane.showMessageDialog(MicropartMonster.this, "Failed to save CSV!");
-						e1.printStackTrace();
-					}
-				}
-				if (s.equals(newKeystroke)) {
+				KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
+				if (!MicropartMonster.this.isActive()) return false;
+				if (stroke.equals(newKeystroke)) {
 					try {
 						new Project();
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					return true;
+				} if (stroke.equals(copyKeystroke)) {
+					Object value = jtable.getValueAt(jtable.getSelectedRow(),jtable.getSelectedColumn());
+					StringSelection stringSelection = new StringSelection(value.toString());
+					Toolkit.getDefaultToolkit ().getSystemClipboard().setContents(stringSelection,null);
+					return true;
+				} else if (stroke.equals(saveKeystroke)) {
+					try {
+						MicropartMonster.this.table.getModel().save(MicropartMonster.this.file);
+						MicropartMonster.this.setTitle(file.getName());
+					} catch (IOException e1) {
+						JOptionPane.showMessageDialog(MicropartMonster.this, "Failed to save CSV!");
 						e1.printStackTrace();
 					}
 					return true;

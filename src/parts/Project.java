@@ -62,6 +62,7 @@ public class Project extends InterfaceWindow {
 	
 	public Project() throws IOException {
 		super();
+		file = null;
 		table = new ColumnTable(new DigikeyPartColumn("Digikey Part"),new TextColumn("quantity"),new TextColumn("designator"), new TextColumn("notes"));
 		table.getJTable().setDropMode(DropMode.INSERT);
 		table.getJTable().setTransferHandler(new TransferHandler() {
@@ -82,13 +83,12 @@ public class Project extends InterfaceWindow {
 		    }
 		    
 		    public boolean importData(TransferHandler.TransferSupport info) {
-		    	System.out.println("foo");
 		    	try {
 					Part p = (Part)info.getTransferable().getTransferData(Part.flavor);
 					JTable.DropLocation dl = (JTable.DropLocation) info.getDropLocation();
 					HashMap<String,Object> rowMap = new HashMap<String,Object>();
 					rowMap.put("Digikey Part", p);
-					table.getModel().addRow(rowMap);
+					table.getModel().addRow(rowMap,dl.getRow());
 				} catch (UnsupportedFlavorException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -100,6 +100,30 @@ public class Project extends InterfaceWindow {
 		    protected void exportDone(JComponent c, Transferable data, int action) {
 		    	System.out.println("export done"+data+"  "+action);
 		    }
+		});
+		
+		final KeyStroke saveKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+		final KeyStroke copyKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+		final KeyStroke newKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+		KeyboardFocusManager.getCurrentKeyboardFocusManager()
+		.addKeyEventDispatcher(new KeyEventDispatcher() {
+			@Override
+			public boolean dispatchKeyEvent(KeyEvent e) {
+				KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
+				if (!Project.this.isActive()) return false;
+				if (stroke.equals(newKeystroke)) {
+					try {
+						new Project();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					return true;
+				} else if (stroke.equals(saveKeystroke)) {
+					Project.this.save();
+					return true;
+				}
+				return false;
+			}
 		});
 		
 		JScrollPane scroll = new JScrollPane(table);
@@ -116,120 +140,20 @@ public class Project extends InterfaceWindow {
 		    }
 		});
 	}
-	
-//	private class ProjectTableModel extends AbstractTableModel {
-//		List<String> columns;
-//		List<Map<String,String>> data;
-//		
-//		private void ensureOneEmptyRow() {
-//			boolean change = false;
-//			if (!isEmpty(data.get(data.size()-1))) {
-//				data.add(new HashMap<String,String>());
-//				change = true;
-//			}
-//			while(isEmpty(data.get(data.size()-1)) && isEmpty(data.get(data.size()-2))) {
-//				data.remove(data.size()-1);
-//				change = true;
-//			}
-//			if (change) this.fireTableDataChanged();
-//		}
-//		
-//		private boolean isEmpty(Map<String,String> row) {
-//			for (Entry<String,String> e : row.entrySet()) {
-//				if (StringUtils.isNotBlank(e.getValue())) {
-//					return false;
-//				}
-//			}
-//			return true;
-//		}
-//	
-//		
-//		public ProjectTableModel() throws IOException {
-//			String[] fields = new String[] {"Digikey Part","quantity","designator","notes"};
-//			columns = new LinkedList<String>(Arrays.asList(fields));
-//			data = new ArrayList<Map<String,String>>();
-//			data.add(new HashMap<String,String>());
-//		}
-//		
-//		public ProjectTableModel(File csv) throws IOException {
-//			CSVReader reader = new CSVReader(new FileReader(csv));
-//			
-//			columns = null;
-//			data = new ArrayList<Map<String,String>>();
-//			String[] lineData;
-//		    while ((lineData = reader.readNext()) != null) {
-//				List<String> fields = Arrays.asList(lineData);
-//				
-//				if (columns == null) {
-//					columns = new LinkedList<String>(fields);
-//					continue;
-//				} else {
-//					if (fields.size() != columns.size()) {
-//						continue;
-//					}
-//					Map<String,String> map = new HashMap<String,String>();
-//					for (int i=0; i<fields.size(); i++) {
-//						map.put(columns.get(i),fields.get(i));
-//					}
-//					data.add(map);
-//				}
-//			}
-//		    reader.close();
-//		    
-//		    if (!columns.contains("Digikey Part")) columns.add("Digikey Part");
-//		}
-//		
-//		public void insertPart(Part p, int row) {
-//		}
-//		
-//		public String getColumnName(int col) {
-//			if (col < columns.size()) return columns.get(col);
-//			return null;
-//		}
-//
-//		public int getRowCount() {
-//			return data.size();
-//		}
-//
-//		@Override
-//		public int getColumnCount() {
-//			return columns.size();
-//		}
-//
-//		@Override
-//		public Object getValueAt(int rowIndex, int columnIndex) {
-//			String columnName = getColumnName(columnIndex);
-//			Object o = data.get(rowIndex).get(columnName);
-//			return o;
-//		}
-//		
-//		public boolean isCellEditable(int row, int col) {
-//			if (getColumnName(col).equals("Digikey Part")) return false;
-//			return true;
-//		}
-//		
-//		public void setValueAt(Object value, int row, int col) {
-//			String name = getColumnName(col);
-//			data.get(row).put(name, (String)value);
-//			fireTableCellUpdated(row, col);
-//		}
-//	}
-	
-	private void save(File f) throws IOException {
-		System.out.println("implement save");
-//		setTitle(f.getName());
-//		CSVWriter writer;
-//		writer = new CSVWriter(new FileWriter(Project.this.file));
-//		TableModel model = table.getModel();
-//		
-//		writer.writeNext(model.columns.toArray(new String[this.model.columns.size()]));
-//		for (Map<String, String> rowData : model.data) {
-//			String[] columns = new String[model.columns.size()];
-//			for (int i=0; i<model.columns.size(); i++) {
-//				columns[i] = rowData.get(model.columns.get(i));
-//			}
-//			writer.writeNext(columns);
-//		}
-//		writer.close();
+
+	protected void save() {
+		if (file == null) {
+			FileDialog filepicker = new FileDialog(Project.this,"Save..",FileDialog.SAVE);
+			filepicker.setVisible(true);
+			File[] files = filepicker.getFiles();
+			if (files.length == 0) return;
+			file = files[0];
+			System.out.println("saving to file: "+file);
+			try {
+				table.getModel().save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

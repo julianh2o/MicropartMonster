@@ -49,12 +49,11 @@ public class ColumnTableModel extends AbstractTableModel {
 
 	public ColumnTableModel(ColumnDef... columnDefinitions) throws IOException {
 		this.columnDefinitions = Arrays.asList(columnDefinitions);
-		data = new ArrayList<Map<String,Object>>();
-		data.add(new HashMap<String,Object>());
+		data = new LinkedList<Map<String,Object>>();
 	}
 	
-	public void addRow(HashMap<String,Object> row) {
-		data.add(row);
+	public void addRow(HashMap<String,Object> rowData, int row) {
+		data.add(row, rowData);
 		this.fireTableDataChanged();
 	}
 	
@@ -63,7 +62,7 @@ public class ColumnTableModel extends AbstractTableModel {
 		CSVReader reader = new CSVReader(new FileReader(csv));
 		
 		List<String> columns = null;
-		data = new ArrayList<Map<String,Object>>();
+		data = new LinkedList<Map<String,Object>>();
 		String[] lineData;
 	    while ((lineData = reader.readNext()) != null) {
 			List<String> fields = Arrays.asList(lineData);

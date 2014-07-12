@@ -1,5 +1,6 @@
 package table;
 
+import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
@@ -51,10 +52,11 @@ public class ColumnTable extends JPanel {
 	ColumnTableModel model;
 
 	public ColumnTable(ColumnDef... columnDefinitions) throws IOException {
-		model = new ExpandingColumnTableModel(columnDefinitions);
+		model = new ColumnTableModel(columnDefinitions);
 		
 		this.setLayout(new MigLayout("fill"));
 		table = new JTable(model);
+		table.setFillsViewportHeight(true);
 		this.add(new JScrollPane(table),"wrap,span,grow");
 		
 		table.addMouseListener(new MouseAdapter() {
@@ -62,6 +64,7 @@ public class ColumnTable extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				int row = table.rowAtPoint(e.getPoint());
 		        int col = table.columnAtPoint(e.getPoint());
+		        if (row == -1) return;
 		        Object value = table.getValueAt(row, col);
 		        ColumnDef def = model.columnDefinitions.get(col);
 		        if (!def.cellClicked(table,e,value)) super.mouseClicked(e);
