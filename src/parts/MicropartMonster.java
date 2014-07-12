@@ -1,5 +1,6 @@
 package parts;
 
+import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
@@ -62,12 +63,15 @@ public class MicropartMonster extends InterfaceWindow {
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		FileDialog filepicker = new FileDialog((java.awt.Frame) null);
 		
-		String[] openinventories = ((String)PropertyManager.getInstance().get("openinventories")).split(":");
-		String file = openinventories[0];
+		System.out.println(PropertyManager.getInstance().getProperties().inventories);
+		PropertyManager.getInstance().getProperties().inventories.add(new PropertyManager.OpenWindow("./foo.txt", 0,0,200,200));
+		PropertyManager.getInstance().save();
+		String file = null;
 		if (file == null) return;
 		
 		PartCache.getInstance().loadCache(new File("./mpncache.json"));
 		new MicropartMonster(new File(file));
+		System.out.println("rawr");
 		//PartLibrary pd = new PartLibrary(new MicropartMonster(new File(file)));
 		//pd.showDialog();
 	}
@@ -149,6 +153,7 @@ public class MicropartMonster extends InterfaceWindow {
 		final KeyStroke saveKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 		final KeyStroke copyKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 		final KeyStroke newKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+		final KeyStroke openKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 		KeyboardFocusManager.getCurrentKeyboardFocusManager()
 		.addKeyEventDispatcher(new KeyEventDispatcher() {
 			@Override
@@ -176,20 +181,48 @@ public class MicropartMonster extends InterfaceWindow {
 						e1.printStackTrace();
 					}
 					return true;
+				} else if (stroke.equals(openKeystroke)) {
+					FileDialog filepicker = new FileDialog(MicropartMonster.this,"Open..",FileDialog.LOAD);
+					filepicker.setVisible(true);
+					File[] files = filepicker.getFiles();
+					if (files.length == 0) return true;
+					try {
+						new Project(files[0]);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					return true;
 				}
 				return false;
 			}
 		});
 		
 		
+		this.setSize(new Dimension(300,500));
 		this.setVisible(true);
 		this.pack();
-		loadSize();
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
 		addComponentListener(new ComponentAdapter() {
 		    public void componentResized(ComponentEvent e) {
 		    	InterfaceWindow.saveWidowSize(MicropartMonster.this);
 		    }
 		});
+	}
+	
+	public Object getWindowState() {
+		HashMap<String,Object> map = new HashMap<String,Object>();
+		map.put("file", this.file.getAbsolutePath());
+		map.put("windowX", this.getLocation().x);
+		map.put("windowY", this.getLocation().y);
+		map.put("windowWidth", this.getSize().width);
+		map.put("windowHeight", this.getSize().height);
+		return map;
+	}
+	
+	public void restoreWindowState(Object o) {
+		HashMap<String,Object> map = (HashMap<String,Object>)o;
+		this.file = (File)map.get("file");
+		this.setLocation((Integer)map.get("windowX"),(Integer)map.get("windowY"));
+		this.setSize((Integer)map.get("windowWidth"),(Integer)map.get("windowHeight"));
 	}
 }

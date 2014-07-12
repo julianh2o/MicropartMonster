@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="/home/julian/Hobby/Development/Programming/javalib/apache-http-components/httpclient-4.3.1.jar"/>
 	<classpathentry kind="lib" path="/home/julian/Hobby/Development/Programming/javalib/apache-http-components/httpcore-4.3.jar"/>
 	<classpathentry kind="lib" path="/home/julian/Hobby/Development/Programming/javalib/miglayout-4.0-swing.jar"/>
+	<classpathentry kind="lib" path="/home/julian/Hobby/Development/Programming/javalib/snakeyaml-1.13.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

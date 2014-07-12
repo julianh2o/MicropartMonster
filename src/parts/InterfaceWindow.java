@@ -12,18 +12,18 @@ public class InterfaceWindow extends JFrame {
 	
 	public static void loadWindowSize(Window w) {
 		try {
-			int width = PropertyManager.getInstance().getInt(getWindowPropertyKey(w,"width"));
-			int height = PropertyManager.getInstance().getInt(getWindowPropertyKey(w,"height"));
-			w.setSize(width,height);
+//			int width = PropertyManager.getInstance().getInt(getWindowPropertyKey(w,"width"));
+//			int height = PropertyManager.getInstance().getInt(getWindowPropertyKey(w,"height"));
+//			w.setSize(width,height);
 		} catch (Exception e) {
 			//dont care
 		}
 	}
 	
 	public static void saveWidowSize(Window w) {
-		Dimension dim = w.getSize();
-		PropertyManager.getInstance().set(getWindowPropertyKey(w,"width"),dim.width);
-		PropertyManager.getInstance().set(getWindowPropertyKey(w,"height"),dim.height);
+//		Dimension dim = w.getSize();
+//		PropertyManager.getInstance().set(getWindowPropertyKey(w,"width"),dim.width);
+//		PropertyManager.getInstance().set(getWindowPropertyKey(w,"height"),dim.height);
 	}
 	
 	public void loadSize() {

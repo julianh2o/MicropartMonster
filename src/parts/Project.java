@@ -60,6 +60,12 @@ public class Project extends InterfaceWindow {
 	private File file;
 	private ColumnTable table;
 	
+	public Project(File f) throws IOException {
+		this();
+		System.out.println("file: "+f);
+		load(f);
+	}
+	
 	public Project() throws IOException {
 		super();
 		file = null;
@@ -89,6 +95,7 @@ public class Project extends InterfaceWindow {
 					HashMap<String,Object> rowMap = new HashMap<String,Object>();
 					rowMap.put("Digikey Part", p);
 					table.getModel().addRow(rowMap,dl.getRow());
+					updateTitle(true);
 				} catch (UnsupportedFlavorException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -122,6 +129,7 @@ public class Project extends InterfaceWindow {
 					Project.this.save();
 					return true;
 				}
+				
 				return false;
 			}
 		});
@@ -140,6 +148,24 @@ public class Project extends InterfaceWindow {
 		    }
 		});
 	}
+	
+	protected void updateTitle(boolean edited) {
+		if (file == null) {
+			this.setTitle("Unsaved Project");
+			return;
+		}
+		this.setTitle(file.getName() + (edited ? "*" : ""));
+	}
+	
+	protected void load(File f) {
+		file = f;
+		updateTitle(false);
+		try {
+			table.getModel().load(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	protected void save() {
 		if (file == null) {
@@ -148,12 +174,29 @@ public class Project extends InterfaceWindow {
 			File[] files = filepicker.getFiles();
 			if (files.length == 0) return;
 			file = files[0];
-			System.out.println("saving to file: "+file);
-			try {
-				table.getModel().save(file);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
+		try {
+			table.getModel().save(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		updateTitle(false);
+	}
+	
+	public Object getWindowState() {
+		HashMap<String,Object> map = new HashMap<String,Object>();
+		map.put("file", this.file.getAbsolutePath());
+		map.put("windowX", this.getLocation().x);
+		map.put("windowY", this.getLocation().y);
+		map.put("windowWidth", this.getSize().width);
+		map.put("windowHeight", this.getSize().height);
+		return map;
+	}
+	
+	public void restoreWindowState(Object o) {
+		HashMap<String,Object> map = (HashMap<String,Object>)o;
+		this.file = (File)map.get("file");
+		this.setLocation((Integer)map.get("windowX"),(Integer)map.get("windowY"));
+		this.setSize((Integer)map.get("windowWidth"),(Integer)map.get("windowHeight"));
 	}
 }
