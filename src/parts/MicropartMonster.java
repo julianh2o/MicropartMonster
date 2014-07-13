@@ -2,6 +2,7 @@ package parts;
 
 import java.awt.Dimension;
 import java.awt.FileDialog;
+import java.awt.Frame;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
@@ -63,29 +64,57 @@ public class MicropartMonster extends InterfaceWindow {
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		FileDialog filepicker = new FileDialog((java.awt.Frame) null);
 		
-		System.out.println(PropertyManager.getInstance().getProperties().inventories);
-		PropertyManager.getInstance().getProperties().inventories.add(new PropertyManager.OpenWindow("./foo.txt", 0,0,200,200));
-		PropertyManager.getInstance().save();
-		String file = null;
-		if (file == null) return;
-		
 		PartCache.getInstance().loadCache(new File("./mpncache.json"));
-		new MicropartMonster(new File(file));
-		System.out.println("rawr");
-		//PartLibrary pd = new PartLibrary(new MicropartMonster(new File(file)));
-		//pd.showDialog();
+		
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				PropertyManager.getInstance().clear();
+				HashMap<String,Object> props = PropertyManager.getInstance().getProperties();
+				List<Object> inventories = (List<Object>) props.get("inventories");
+				List<Object> projects = (List<Object>) props.get("projects");
+				for (Frame frame : JFrame.getFrames()) {
+					if (frame instanceof MicropartMonster) {
+						inventories.add(((MicropartMonster)frame).getWindowState());
+					} else if (frame instanceof Project) {
+						projects.add(((Project)frame).getWindowState());
+					}
+				}
+				PropertyManager.getInstance().save();
+			}
+		});
+		
+		HashMap<String,Object> data = PropertyManager.getInstance().getProperties();
+		List<Object> inventories = (List<Object>) data.get("inventories");
+		for (Object inv : inventories) {
+			new MicropartMonster().restoreWindowState(inv);
+		}
+		List<Object> projects = (List<Object>) data.get("projects");
+		for (Object proj : projects) {
+			new Project().restoreWindowState(proj);
+		}
 	}
 	
 	private File file;
 	private ColumnTable table;
 	
-	public MicropartMonster(File f) throws IOException {
-		super();
+	public void setFile(File f) throws IOException {
 		file = f;
-		table = new ColumnTable(new DigikeyPartColumn("Digikey Part"),new TextColumn("location"),new TextColumn("stock"));
 		if (f.exists()) {
 			table.getModel().load(f);
+	        int digikeyColumn = table.getModel().findColumn("Digikey Part");
+	        for (int i=0; i<table.getModel().getRowCount(); i++) {
+	        	String val = (String)table.getModel().getValueAt(i, digikeyColumn);
+	        	if (!StringUtils.isBlank(val)) table.getJTable().setValueAt(PartCache.getInstance().getPart(val),i,digikeyColumn);
+	        }
+	        table.getModel().fireTableDataChanged();
 		}
+		setTitle(f.getName());
+	}
+	
+	public MicropartMonster() throws IOException {
+		super();
+		table = new ColumnTable(new DigikeyPartColumn("Digikey Part"),new TextColumn("location"),new TextColumn("stock"));
 		
 		table.getModel().addTableModelListener(new TableModelListener() {
 			@Override
@@ -93,15 +122,7 @@ public class MicropartMonster extends InterfaceWindow {
 				MicropartMonster.this.setTitle(file.getName()+"*");
 			}
 		});
-		setTitle(f.getName());
 		final JTable jtable = table.getJTable();
-		if (f.exists()) {
-	        int digikeyColumn = table.getModel().findColumn("Digikey Part");
-	        for (int i=0; i<table.getModel().getRowCount(); i++) {
-	        	String val = (String)table.getModel().getValueAt(i, digikeyColumn);
-	        	if (!StringUtils.isBlank(val)) jtable.setValueAt(PartCache.getInstance().getPart(val),i,digikeyColumn);
-	        }
-		}
 		jtable.setDragEnabled(true);
 		jtable.setTransferHandler(new TransferHandler() {
 		    public boolean canImport(TransferHandler.TransferSupport info) {
@@ -197,7 +218,6 @@ public class MicropartMonster extends InterfaceWindow {
 			}
 		});
 		
-		
 		this.setSize(new Dimension(300,500));
 		this.setVisible(true);
 		this.pack();
@@ -219,9 +239,9 @@ public class MicropartMonster extends InterfaceWindow {
 		return map;
 	}
 	
-	public void restoreWindowState(Object o) {
+	public void restoreWindowState(Object o) throws IOException {
 		HashMap<String,Object> map = (HashMap<String,Object>)o;
-		this.file = (File)map.get("file");
+		setFile(new File((String)map.get("file")));
 		this.setLocation((Integer)map.get("windowX"),(Integer)map.get("windowY"));
 		this.setSize((Integer)map.get("windowWidth"),(Integer)map.get("windowHeight"));
 	}

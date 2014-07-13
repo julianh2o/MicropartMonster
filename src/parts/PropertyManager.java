@@ -16,28 +16,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
 
 public class PropertyManager extends JFrame {
-	public static class Properties {
-		public List<OpenWindow> inventories = new LinkedList<OpenWindow>();
-		public List<OpenWindow> projects = new LinkedList<OpenWindow>();
-	}
-	
-	public static class OpenWindow {
-		public String file;
-		public int windowX;
-		public int windowY;
-		public int windowWidth;
-		public int windowHeight;
-		public OpenWindow(String file, int windowX, int windowY, int windowWidth, int windowHeight) {
-			super();
-			this.file = file;
-			this.windowX = windowX;
-			this.windowY = windowY;
-			this.windowWidth = windowWidth;
-			this.windowHeight = windowHeight;
-		}
-	}
-	
-	Properties properties;
+	HashMap<String,Object> properties;
 	private static PropertyManager instance;
 	public static PropertyManager getInstance() {
 		try {
@@ -49,11 +28,11 @@ public class PropertyManager extends JFrame {
 	}
 	
 	private PropertyManager() throws IOException {
-		properties = new Properties();
+		properties = new HashMap<String, Object>();
 		loadProperties();
 	}
 	
-	public Properties getProperties() {
+	public HashMap<String,Object> getProperties() {
 		return properties;
 	}
 	
@@ -68,7 +47,8 @@ public class PropertyManager extends JFrame {
 	public void loadPropertiesFile(File f) throws IOException {
 		FileInputStream in = new FileInputStream(f);
 		Yaml yaml = new Yaml();
-		properties = yaml.loadAs(in,Properties.class);
+		HashMap<String,Object> data = (HashMap<String, Object>) yaml.load(in);
+		this.properties = data;
 		in.close();
 	}
 	
@@ -80,6 +60,12 @@ public class PropertyManager extends JFrame {
 		pr.write(ymlString);
 		pr.close();
 		out.close();
+	}
+	
+	public void clear() {
+		properties = new HashMap<String,Object>();
+		properties.put("inventories",new LinkedList<Object>());
+		properties.put("projects",new LinkedList<Object>());
 	}
 	
 	public void save() {
