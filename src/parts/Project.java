@@ -195,7 +195,7 @@ public class Project extends InterfaceWindow {
 	
 	public void restoreWindowState(Object o) {
 		HashMap<String,Object> map = (HashMap<String,Object>)o;
-		this.file = new File((String)map.get("file"));
+		load(new File((String)map.get("file")));
 		this.setLocation((Integer)map.get("windowX"),(Integer)map.get("windowY"));
 		this.setSize((Integer)map.get("windowWidth"),(Integer)map.get("windowHeight"));
 	}

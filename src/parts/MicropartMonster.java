@@ -74,6 +74,7 @@ public class MicropartMonster extends InterfaceWindow {
 				List<Object> inventories = (List<Object>) props.get("inventories");
 				List<Object> projects = (List<Object>) props.get("projects");
 				for (Frame frame : JFrame.getFrames()) {
+					if (!frame.isVisible()) continue;
 					if (frame instanceof MicropartMonster) {
 						inventories.add(((MicropartMonster)frame).getWindowState());
 					} else if (frame instanceof Project) {
