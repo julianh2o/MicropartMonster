@@ -18,11 +18,16 @@ public class Part extends OctopartObject { // implements Transferable {
 	}
 	
 	public String toString() {
-		return getPartNumber();
+		return getManufacturerPartNumber();
 	}
 	
-	public String getPartNumber() {
+	public String getManufacturerPartNumber() {
 		return json.get("item").getAsJsonObject().get("mpn").getAsString();
+	}
+	
+	public String getSkuPartNumber() {
+		throw new RuntimeException("not implemented");
+		//return json.get("item").getAsJsonObject().get("mpn").getAsString();
 	}
 	
 	public String getStringDescription() {

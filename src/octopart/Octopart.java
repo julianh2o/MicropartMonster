@@ -91,8 +91,8 @@ public class Octopart {
 	public List<Part> findParts(String query) {
 		URL url = createSearchUrl(query);
 		System.out.println("URL: "+url.toString());
-		JsonObject data = OctopartJsonService.getStoredResults();
-		//JsonObject data = OctopartJsonService.fetchJson(url);
+//		JsonObject data = OctopartJsonService.getStoredResults();
+		JsonObject data = OctopartJsonService.fetchJson(url);
 		
 		List<Part> parts = new ArrayList<Part>(data.getAsJsonArray("results").size());
 		for (JsonElement el : data.getAsJsonArray("results")) {

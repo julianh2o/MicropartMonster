@@ -19,11 +19,12 @@ public class ExpandingColumnTableModel extends ColumnTableModel {
 				ensureOneEmptyRow();
 			}
 		});
+		ensureOneEmptyRow();
 	}
 
 	private void ensureOneEmptyRow() {
 		boolean change = false;
-		if (!isEmpty(data.get(data.size()-1))) {
+		if (data.size() == 0 || !isEmpty(data.get(data.size()-1))) {
 			data.add(new HashMap<String,Object>());
 			change = true;
 		}

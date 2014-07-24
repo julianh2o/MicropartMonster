@@ -16,6 +16,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -87,9 +88,21 @@ public class MicropartMonster extends InterfaceWindow {
 		
 		HashMap<String,Object> data = PropertyManager.getInstance().getProperties();
 		List<Object> inventories = (List<Object>) data.get("inventories");
+		boolean inventoryWindow = false;
 		for (Object inv : inventories) {
-			new MicropartMonster().restoreWindowState(inv);
+			MicropartMonster mm = new MicropartMonster();
+			try {
+				mm.restoreWindowState(inv);
+				inventoryWindow = true;
+			} catch (FileNotFoundException e) {
+				mm.dispose();
+			}
 		}
+		if (!inventoryWindow) {
+			System.out.println("none found, creating new..");
+			new MicropartMonster();
+		}
+		
 		List<Object> projects = (List<Object>) data.get("projects");
 		for (Object proj : projects) {
 			new Project().restoreWindowState(proj);
@@ -106,7 +119,10 @@ public class MicropartMonster extends InterfaceWindow {
 	        int digikeyColumn = table.getModel().findColumn("Digikey Part");
 	        for (int i=0; i<table.getModel().getRowCount(); i++) {
 	        	String val = (String)table.getModel().getValueAt(i, digikeyColumn);
-	        	if (!StringUtils.isBlank(val)) table.getJTable().setValueAt(PartCache.getInstance().getPart(val),i,digikeyColumn);
+	        	if (!StringUtils.isBlank(val)) {
+	        		Part p = PartCache.getInstance().getPart(val);
+		        	table.getJTable().setValueAt(p,i,digikeyColumn);
+	        	}
 	        }
 	        table.getModel().fireTableDataChanged();
 		}
@@ -115,12 +131,17 @@ public class MicropartMonster extends InterfaceWindow {
 	
 	public MicropartMonster() throws IOException {
 		super();
-		table = new ColumnTable(new DigikeyPartColumn("Digikey Part"),new TextColumn("location"),new TextColumn("stock"));
+		setTitle("Unsaved Inventory");
+		table = new ColumnTable(true,new DigikeyPartColumn("Digikey Part"),new TextColumn("location"),new TextColumn("stock"));
 		
 		table.getModel().addTableModelListener(new TableModelListener() {
 			@Override
 			public void tableChanged(TableModelEvent e) {
-				MicropartMonster.this.setTitle(file.getName()+"*");
+				if (file == null) {
+					MicropartMonster.this.setTitle("Unsaved Inventory*");
+				} else {
+					MicropartMonster.this.setTitle(file.getName()+"*");
+				}
 			}
 		});
 		final JTable jtable = table.getJTable();
@@ -159,7 +180,7 @@ public class MicropartMonster extends InterfaceWindow {
 				if (columnName.equals("Digikey Part") && e.getClickCount() > 1) {
 					PartFinder finder = new PartFinder(MicropartMonster.this);
 					Part part = finder.showDialog();
-					if (part != null) jtable.setValueAt(part.getPartNumber(),row,col);
+					if (part != null) jtable.setValueAt(part.getManufacturerPartNumber(),row,col);
 				}
 				
 				if (SwingUtilities.isRightMouseButton(e)) {
@@ -196,8 +217,7 @@ public class MicropartMonster extends InterfaceWindow {
 					return true;
 				} else if (stroke.equals(saveKeystroke)) {
 					try {
-						MicropartMonster.this.table.getModel().save(MicropartMonster.this.file);
-						MicropartMonster.this.setTitle(file.getName());
+						MicropartMonster.this.save();
 					} catch (IOException e1) {
 						JOptionPane.showMessageDialog(MicropartMonster.this, "Failed to save CSV!");
 						e1.printStackTrace();
@@ -230,6 +250,18 @@ public class MicropartMonster extends InterfaceWindow {
 		});
 	}
 	
+	public void save() throws IOException {
+		if (this.file == null) {
+			FileDialog filepicker = new FileDialog(MicropartMonster.this,"Save..",FileDialog.SAVE);
+			filepicker.setVisible(true);
+			File[] files = filepicker.getFiles();
+			if (files.length == 0) return;
+			this.file = files[0];
+		}
+		this.table.getModel().save(this.file);
+		this.setTitle(file.getName());
+	}
+	
 	public Object getWindowState() {
 		HashMap<String,Object> map = new HashMap<String,Object>();
 		map.put("file", this.file.getAbsolutePath());
@@ -242,7 +274,9 @@ public class MicropartMonster extends InterfaceWindow {
 	
 	public void restoreWindowState(Object o) throws IOException {
 		HashMap<String,Object> map = (HashMap<String,Object>)o;
-		setFile(new File((String)map.get("file")));
+		File f = new File((String)map.get("file"));
+		if (!f.exists()) throw new FileNotFoundException();
+		setFile(f);
 		this.setLocation((Integer)map.get("windowX"),(Integer)map.get("windowY"));
 		this.setSize((Integer)map.get("windowWidth"),(Integer)map.get("windowHeight"));
 	}

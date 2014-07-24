@@ -32,7 +32,7 @@ public class PartTableAdapter implements TableAdapter<Part> {
 	@Override
 	public List<Object> getValues(Part obj) {
 		List<Object> values = new ArrayList<Object>(Arrays.asList( 
-			obj.getPartNumber(),
+			obj.getManufacturerPartNumber(),
 			obj.getStringDescription()
 		));
 		for(String key : specificationKeys) {

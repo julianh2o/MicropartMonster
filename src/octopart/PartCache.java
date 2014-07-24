@@ -46,8 +46,10 @@ public class PartCache {
 	
 	private Part fetchPart(String mpn) {
 		List<Part> parts = Octopart.getInstance().findParts(mpn);
+		System.out.println("fetching parts: "+mpn);
 		for (Part p : parts) {
-			if (p.getPartNumber().equals(mpn)) return p;
+			System.out.println("found part: "+p.getManufacturerPartNumber());
+			if (p.getManufacturerPartNumber().equals(mpn)) return p;
 		}
 		return null;
 	}

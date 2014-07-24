@@ -69,7 +69,7 @@ public class Project extends InterfaceWindow {
 	public Project() throws IOException {
 		super();
 		file = null;
-		table = new ColumnTable(new DigikeyPartColumn("Digikey Part"),new TextColumn("quantity"),new TextColumn("designator"), new TextColumn("notes"));
+		table = new ColumnTable(false,new DigikeyPartColumn("Digikey Part"),new TextColumn("quantity"),new TextColumn("designator"), new TextColumn("notes"));
 		table.getJTable().setDropMode(DropMode.INSERT);
 		table.getJTable().setTransferHandler(new TransferHandler() {
 		    public boolean canImport(TransferHandler.TransferSupport info) {

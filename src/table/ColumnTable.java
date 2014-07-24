@@ -51,8 +51,12 @@ public class ColumnTable extends JPanel {
 	JTable table;
 	ColumnTableModel model;
 
-	public ColumnTable(ColumnDef... columnDefinitions) throws IOException {
-		model = new ColumnTableModel(columnDefinitions);
+	public ColumnTable(boolean expanding, ColumnDef... columnDefinitions) throws IOException {
+		if (expanding) {
+			model = new ExpandingColumnTableModel(columnDefinitions);
+		} else {
+			model = new ColumnTableModel(columnDefinitions);
+		}
 		
 		this.setLayout(new MigLayout("fill"));
 		table = new JTable(model);
