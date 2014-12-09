@@ -1,9 +1,6 @@
 package octopart;
 
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;

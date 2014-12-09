@@ -5,15 +5,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 
 import javax.swing.JFrame;
 
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Tag;
 
 public class PropertyManager extends JFrame {
 	HashMap<String,Object> properties;

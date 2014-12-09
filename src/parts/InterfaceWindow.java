@@ -1,6 +1,5 @@
 package parts;
 
-import java.awt.Dimension;
 import java.awt.Window;
 
 import javax.swing.JFrame;

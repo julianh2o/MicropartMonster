@@ -5,10 +5,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import octopart.Part;
 import octopart.PartSpecification;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class PartTableAdapter implements TableAdapter<Part> {
 	List<String> specificationKeys;

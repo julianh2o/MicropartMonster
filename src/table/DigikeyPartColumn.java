@@ -6,8 +6,6 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
 import octopart.Part;
-
-import parts.MicropartMonster;
 import parts.PartFinder;
 
 public class DigikeyPartColumn extends ColumnDef {
