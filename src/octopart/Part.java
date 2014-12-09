@@ -1,9 +1,12 @@
 package octopart;
 
 import java.awt.datatransfer.DataFlavor;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+
+import Util.JsonUtil;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -15,16 +18,21 @@ public class Part extends OctopartObject { // implements Transferable {
 	}
 	
 	public String toString() {
-		return getManufacturerPartNumber();
+		return getSkuPartNumber("Digi-Key");
 	}
 	
 	public String getManufacturerPartNumber() {
 		return json.get("item").getAsJsonObject().get("mpn").getAsString();
 	}
 	
-	public String getSkuPartNumber() {
-		throw new RuntimeException("not implemented");
-		//return json.get("item").getAsJsonObject().get("mpn").getAsString();
+	public String getSkuPartNumber(String seller) {
+		for (JsonElement el : JsonUtil.getArrayAtPath(json,"item.offers")) {
+			if (JsonUtil.getStringAtPath(el, "seller.name").equals(seller)) {
+				return JsonUtil.getStringAtPath(el,"sku");
+			}
+		}
+		System.err.println("error: seller sku not found");
+		return null;
 	}
 	
 	public String getStringDescription() {

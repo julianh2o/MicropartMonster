@@ -49,7 +49,11 @@ public class MicropartMonster extends InterfaceWindow {
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		FileDialog filepicker = new FileDialog((java.awt.Frame) null);
 		
-		PartCache.getInstance().loadCache(new File("./mpncache.json"));
+		try {
+			PartCache.getInstance().loadCache(new File("./mpncache.json"));
+		} catch (Exception e) {
+			System.out.println("no cache found, creating one");
+		}
 		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -164,7 +168,7 @@ public class MicropartMonster extends InterfaceWindow {
 				if (columnName.equals("Digikey Part") && e.getClickCount() > 1) {
 					PartFinder finder = new PartFinder(MicropartMonster.this);
 					Part part = finder.showDialog();
-					if (part != null) jtable.setValueAt(part.getManufacturerPartNumber(),row,col);
+					if (part != null) jtable.setValueAt(part.getSkuPartNumber("Digikey"),row,col);
 				}
 				
 				if (SwingUtilities.isRightMouseButton(e)) {

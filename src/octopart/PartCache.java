@@ -30,24 +30,22 @@ public class PartCache {
 		partNumberMap = new HashMap<String,Part>();
 	}
 	
-	public Part getPart(String mpn) {
-		if (!partNumberMap.containsKey(mpn)) {
-			partNumberMap.put(mpn,fetchPart(mpn));
+	public Part getPart(String sku) {
+		if (!partNumberMap.containsKey(sku)) {
+			partNumberMap.put(sku,fetchPart(sku));
 			trySave();
 		}
-		return partNumberMap.get(mpn);
+		return partNumberMap.get(sku);
 	}
 	
-	public boolean isPartCached(String mpn) {
-		return partNumberMap.containsKey(mpn);
+	public boolean isPartCached(String sku) {
+		return partNumberMap.containsKey(sku);
 	}
 	
-	private Part fetchPart(String mpn) {
-		List<Part> parts = Octopart.getInstance().findParts(mpn);
-		System.out.println("fetching parts: "+mpn);
+	private Part fetchPart(String sku) {
+		List<Part> parts = Octopart.getInstance().findParts(sku);
 		for (Part p : parts) {
-			System.out.println("found part: "+p.getManufacturerPartNumber());
-			if (p.getManufacturerPartNumber().equals(mpn)) return p;
+			if (p.getSkuPartNumber("Digi-Key").equals(sku)) return p;
 		}
 		return null;
 	}
