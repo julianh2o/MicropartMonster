@@ -1,5 +1,7 @@
 package table;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -7,6 +9,8 @@ import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -26,6 +30,13 @@ public class ColumnTable extends JPanel {
 		table.setFillsViewportHeight(true);
 		this.add(new JScrollPane(table),"wrap,span,grow");
 		
+		int index = 0;
+		for (ColumnDef def : columnDefinitions) {
+			def.table = table;
+			TableColumn column = table.getColumnModel().getColumn(index++);
+			def.setupColumn(column);
+		}
+		
 		table.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -40,6 +51,15 @@ public class ColumnTable extends JPanel {
 //					StringSelection stringSelection = new StringSelection(value.toString());
 //					Toolkit.getDefaultToolkit ().getSystemClipboard().setContents(stringSelection,null);
 //				}
+			}
+		});
+		
+		final TableCellRenderer defaultRenderer = table.getDefaultRenderer(Object.class);
+		table.setDefaultRenderer(Object.class, new TableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				ColumnDef columnDef = columnDefinitions[column];
+				return columnDef.render(value, table, defaultRenderer, isSelected, hasFocus, row, column);
 			}
 		});
 		

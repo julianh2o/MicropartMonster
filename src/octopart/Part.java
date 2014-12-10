@@ -22,7 +22,7 @@ public class Part extends OctopartObject { // implements Transferable {
 	}
 	
 	public String getManufacturerPartNumber() {
-		return json.get("item").getAsJsonObject().get("mpn").getAsString();
+		return JsonUtil.getStringAtPath(json, "item.mpn");
 	}
 	
 	public String getSkuPartNumber(String seller) {
