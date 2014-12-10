@@ -12,7 +12,7 @@ import javax.swing.JFrame;
 
 import org.yaml.snakeyaml.Yaml;
 
-public class PropertyManager extends JFrame {
+public class PropertyManager {
 	HashMap<String,Object> properties;
 	private static PropertyManager instance;
 	public static PropertyManager getInstance() {

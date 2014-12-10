@@ -40,16 +40,10 @@ public class DigikeyPartColumn extends ColumnDef {
 		description.setFont(new Font("Serif", Font.PLAIN, 12));
 		description.setForeground(new Color(70,70,70));
 		renderComponent.add(description,"gapleft 10");
-		
-	    popupMenu = new JPopupMenu();
-        JMenuItem replacePart = new JMenuItem("Replace Part");
-        replacePart.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				findNewPart();
-			}
-        });
-        popupMenu.add(replacePart);
+	}
+	
+	public void attachRightClickMenu(JPopupMenu menu) {
+		this.popupMenu = menu;
 	}
 	
 	public String getLabel() {
@@ -61,7 +55,7 @@ public class DigikeyPartColumn extends ColumnDef {
 		return false;
 	}
 	
-	private void findNewPart() {
+	public void editSelectedValue() {
 		PartFinder finder = new PartFinder(SwingUtilities.getWindowAncestor(table));
 		Part part = finder.showDialog();
 		if (part != null) table.setValueAt(part,table.getSelectedRow(),table.getSelectedColumn());
@@ -75,13 +69,13 @@ public class DigikeyPartColumn extends ColumnDef {
             int column = source.columnAtPoint( e.getPoint() );
 
             if (! source.isRowSelected(row)) source.changeSelection(row, column, false, false);
-            popupMenu.show(e.getComponent(), e.getX(), e.getY());
+            if (popupMenu != null) popupMenu.show(e.getComponent(), e.getX(), e.getY());
 		} else if (e.getClickCount() > 1) {
 			if (value instanceof Part) {
 				PartInfoDialog dialog = new PartInfoDialog((Part)value);
 				dialog.showDialog();
 			} else {
-				findNewPart();
+				editSelectedValue();
 			}
 		}
 		return false;

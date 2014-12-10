@@ -124,7 +124,21 @@ public class MicropartMonster extends InterfaceWindow {
 	public MicropartMonster() throws IOException {
 		super();
 		setTitle("Unsaved Inventory");
-		table = new ColumnTable(true,new DigikeyPartColumn("Digikey Part"),new TextColumn("location",50),new TextColumn("stock",50));
+		DigikeyPartColumn partColumn = new DigikeyPartColumn("Digikey Part");
+		table = new ColumnTable(true,partColumn,new TextColumn("location",50),new TextColumn("stock",50));
+		
+		
+	    JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem replacePart = new JMenuItem("Replace Part");
+        replacePart.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				partColumn.editSelectedValue();
+			}
+        });
+        popupMenu.add(replacePart);
+        partColumn.attachRightClickMenu(popupMenu);
+		
 		
 		table.getModel().addTableModelListener(new TableModelListener() {
 			@Override

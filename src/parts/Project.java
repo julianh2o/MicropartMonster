@@ -22,7 +22,10 @@ import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
 import javax.swing.table.TableColumn;
 
+import org.apache.commons.lang3.StringUtils;
+
 import octopart.Part;
+import octopart.PartCache;
 import table.ColumnTable;
 import table.DigikeyPartColumn;
 import table.TextColumn;
@@ -40,7 +43,7 @@ public class Project extends InterfaceWindow {
 	public Project() throws IOException {
 		super();
 		file = null;
-		table = new ColumnTable(false,new DigikeyPartColumn("Digikey Part"),new TextColumn("quantity"),new TextColumn("designator"), new TextColumn("notes"));
+		table = new ColumnTable(false,new DigikeyPartColumn("Digikey Part"),new TextColumn("quantity",50),new TextColumn("designator",50), new TextColumn("notes",100));
 		table.getJTable().setDropMode(DropMode.INSERT);
 		table.getJTable().setTransferHandler(new TransferHandler() {
 		    public boolean canImport(TransferHandler.TransferSupport info) {
@@ -133,6 +136,15 @@ public class Project extends InterfaceWindow {
 		updateTitle(false);
 		try {
 			table.getModel().load(file);
+	        int digikeyColumn = table.getModel().findColumn("Digikey Part");
+	        for (int i=0; i<table.getModel().getRowCount(); i++) {
+	        	String val = (String)table.getModel().getValueAt(i, digikeyColumn);
+	        	if (!StringUtils.isBlank(val)) {
+	        		Part p = PartCache.getInstance().getPart(val);
+		        	table.getJTable().setValueAt(p,i,digikeyColumn);
+	        	}
+	        }
+	        table.getModel().fireTableDataChanged();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

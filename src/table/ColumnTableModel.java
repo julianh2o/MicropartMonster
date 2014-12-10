@@ -58,7 +58,8 @@ public class ColumnTableModel extends AbstractTableModel {
 	
 	public void save(File f) throws IOException {
 		CSVWriter writer;
-		writer = new CSVWriter(new FileWriter(f));
+		//writer = new CSVWriter(new FileWriter(f));
+		writer = new CSVWriter(new FileWriter(f),',',CSVWriter.NO_QUOTE_CHARACTER);
 		
 		String[] columnHeadings = new String[this.columnDefinitions.size()];
 		for (int i=0; i<this.columnDefinitions.size(); i++) {
